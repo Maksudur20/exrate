@@ -20,15 +20,8 @@ A modern, responsive currency exchange rate converter built with HTML, Tailwind 
 
 ## 🚀 Live Demo
 
-[View Live Demo](#) _(Add your GitHub Pages URL here after deployment)_
+[View Live Demo](https://maksudur20.github.io/exrate/)
 
-## 📸 Screenshots
-
-### Desktop View
-Beautiful gradient background with glass-morphism cards
-
-### Mobile View
-Fully optimized for mobile devices with touch-friendly interface
 
 ## 🛠️ Technologies Used
 
