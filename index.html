@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time currency exchange rates converter">
+    <title>ExRate - Currency Converter</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2310b981'/><stop offset='100%25' style='stop-color:%23059669'/></linearGradient></defs><circle cx='24' cy='24' r='20' fill='url(%23g)'/><text x='15' y='20' font-family='Arial' font-size='14' font-weight='bold' fill='white'>$</text><text x='29' y='32' font-family='Arial' font-size='14' font-weight='bold' fill='white'>€</text><path d='M18 24 L30 24 M28 22 L30 24 L28 26' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.8'/></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom animations and transitions */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .animate-pulse-custom {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Smooth transitions */
+        * {
+            transition: all 0.3s ease;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Select dropdown styling */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2310b981' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        select option {
+            padding: 12px;
+            background-color: white;
+            color: #1f2937;
+            font-size: 16px;
+        }
+
+        select option:hover,
+        select option:checked {
+            background-color: #d1fae5;
+            background: linear-gradient(90deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            font-weight: 500;
+        }
+
+        /* Card hover effect */
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Gradient background with animated pattern */
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 25%, #2c5364 50%, #1e3c72 75%, #2a5298 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            position: relative;
+        }
+
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(74, 144, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(45, 156, 219, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(56, 103, 214, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 60% 20%, rgba(30, 60, 114, 0.2) 0%, transparent 40%);
+            animation: float 25s ease-in-out infinite;
+        }
+
+        .gradient-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(255,255,255,.03) 100px, rgba(255,255,255,.03) 200px);
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 50% 25%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            75% {
+                background-position: 50% 75%;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0px, 0px) scale(1);
+                opacity: 0.8;
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+                opacity: 1;
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+                opacity: 0.9;
+            }
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Flag emoji styling */
+        .flag-icon {
+            font-size: 1.5em;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        /* Currency option with flag */
+        .currency-option {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Card hover effect */
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced input styling */
+        input[type="number"] {
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:hover {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        input[type="number"]:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg flex flex-col" style="position: relative; overflow-x: hidden;">
+    <!-- Header -->
+    <header class="glass shadow-lg sticky top-0 z-50 animate-slide-in">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <!-- Logo SVG -->
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Circular background -->
+                        <circle cx="24" cy="24" r="22" fill="url(#logoGradient)" opacity="0.2"/>
+                        <circle cx="24" cy="24" r="20" fill="url(#logoGradient)"/>
+                        <!-- Currency symbols -->
+                        <text x="15" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">$</text>
+                        <text x="29" y="32" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">€</text>
+                        <!-- Exchange arrows -->
+                        <path d="M18 24 L30 24 M28 22 L30 24 L28 26" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+                    </svg>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">ExRate</h1>
+                </div>
+                <button id="refreshBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    <span class="hidden sm:inline">Refresh</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 md:py-12 flex-grow">
+        <!-- Converter Card -->
+        <div class="max-w-4xl mx-auto glass rounded-2xl shadow-2xl p-6 md:p-8 mb-8 animate-slide-in card-hover">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-calculator text-emerald-500 mr-2"></i>
+                Currency Converter
+            </h2>
+
+            <!-- Amount Input -->
+            <div class="mb-6">
+                <label for="amount" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-dollar-sign text-emerald-500 mr-1"></i>
+                    Amount
+                </label>
+                <input type="number" id="amount" value="1" min="0" step="0.01"
+                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-emerald-500 focus:outline-none text-lg font-medium"
+                    placeholder="Enter amount">
+            </div>
+
+            <!-- From Currency -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                <div>
+                    <label for="fromCurrency" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <span class="flex items-center">
+                            <img id="fromFlag" src="https://flagcdn.com/w40/us.png" alt="flag" class="w-6 h-4 object-cover rounded mr-2 shadow-sm">
+                            <span class="text-emerald-600">From Currency</span>
+                        </span>
+                    </label>
+                    <select id="fromCurrency"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-emerald-500 focus:outline-none text-lg appearance-none font-medium bg-white shadow-sm hover:shadow-md transition-all duration-300">
+                        <option value="USD" selected>USD - US Dollar</option>
+                    </select>
+                </div>
+
+                <!-- Swap Button -->
+                <div class="flex items-end">
+                    <button id="swapBtn"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
+                        <i class="fas fa-exchange-alt text-xl"></i>
+                        <span class="ml-2">Swap</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- To Currency -->
+            <div class="mb-6">
+                <label for="toCurrency" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <span class="flex items-center">
+                        <img id="toFlag" src="https://flagcdn.com/w40/eu.png" alt="flag" class="w-6 h-4 object-cover rounded mr-2 shadow-sm">
+                        <span class="text-emerald-600">To Currency</span>
+                    </span>
+                </label>
+                <select id="toCurrency"
+                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-emerald-500 focus:outline-none text-lg appearance-none font-medium bg-white shadow-sm hover:shadow-md transition-all duration-300">
+                    <option value="EUR">EUR - Euro</option>
+                </select>
+            </div>
+
+            <!-- Convert Button -->
+            <button id="convertBtn"
+                class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 rounded-lg shadow-lg text-lg font-semibold transition-all duration-300 hover:shadow-xl transform hover:scale-105">
+                <i class="fas fa-calculator mr-2"></i>
+                Convert
+            </button>
+
+            <!-- Result Display -->
+            <div id="result" class="mt-6 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-200 hidden">
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm mb-2">Conversion Result</p>
+                    <p id="resultText" class="text-3xl md:text-4xl font-bold text-emerald-700"></p>
+                    <p id="rateInfo" class="text-sm text-gray-600 mt-3"></p>
+                    <p id="lastUpdate" class="text-xs text-gray-500 mt-2"></p>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="mt-6 flex justify-center items-center hidden">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error" class="mt-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg hidden">
+                <p class="text-red-600 text-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="errorText"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Popular Rates Card -->
+        <div class="max-w-4xl mx-auto glass rounded-2xl shadow-2xl p-6 md:p-8 animate-slide-in card-hover">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-chart-line text-emerald-500 mr-2"></i>
+                Popular Exchange Rates (USD Base)
+            </h2>
+
+            <div id="popularRates" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Popular rates will be inserted here -->
+            </div>
+
+            <!-- Loading for popular rates -->
+            <div id="popularLoading" class="flex justify-center items-center py-8">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-6 w-full">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-white">
+                <i class="fas fa-info-circle mr-2"></i>
+                Rates updated daily
+            </p>
+            <p class="text-sm text-white mt-2">
+                Made by <span class="font-semibold">Maksudur Sium</span>
+            </p>
+            <p class="text-xs text-white opacity-80 mt-2">
+                © 2025 ExRate. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
