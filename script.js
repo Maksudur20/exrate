@@ -8,6 +8,30 @@ let cachedBaseCurrency = null;
 let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Fetch with timeout and retry logic
+async function fetchWithRetry(url, options = {}, retries = 3, timeout = 10000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            return response;
+            
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
+    }
+}
+
 // Popular currencies to display
 const POPULAR_CURRENCIES = ['EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR', 'MXN'];
 
@@ -289,7 +313,7 @@ async function loadCurrencies(baseCurrency = 'USD') {
             return;
         }
 
-        const response = await fetch(`${API_URL}/${API_KEY}/latest/${baseCurrency}`);
+        const response = await fetchWithRetry(`${API_URL}/${API_KEY}/latest/${baseCurrency}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -309,7 +333,11 @@ async function loadCurrencies(baseCurrency = 'USD') {
         populateCurrencyDropdowns(data.conversion_rates, baseCurrency);
         
     } catch (error) {
-        showError('Failed to load currencies. Please check your connection.');
+        if (error.name === 'AbortError') {
+            showError('Request timeout. Please check your connection and try again.');
+        } else {
+            showError('Failed to load currencies. Please check your connection.');
+        }
         console.error('Error loading currencies:', error);
     }
 }
@@ -358,7 +386,7 @@ async function convertCurrency() {
         // Get rates from cache or API
         let rates = cachedRates;
         if (!rates || cachedBaseCurrency !== from) {
-            const response = await fetch(`${API_URL}/${API_KEY}/latest/${from}`);
+            const response = await fetchWithRetry(`${API_URL}/${API_KEY}/latest/${from}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -412,7 +440,13 @@ async function convertCurrency() {
         }
         
     } catch (error) {
-        showError('Conversion failed. Please try again.');
+        if (error.name === 'AbortError') {
+            showError('Request timeout. Please check your connection and try again.');
+        } else if (error.message.includes('HTTP error')) {
+            showError('Unable to connect to exchange rate service. Please try again later.');
+        } else {
+            showError('Conversion failed. Please try again.');
+        }
         console.error('Conversion error:', error);
     } finally {
         showLoading(false);
@@ -425,7 +459,7 @@ async function loadPopularRates() {
         elements.popularLoading.classList.remove('hidden');
         elements.popularRates.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/${API_KEY}/latest/USD`);
+        const response = await fetchWithRetry(`${API_URL}/${API_KEY}/latest/USD`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -466,10 +500,14 @@ async function loadPopularRates() {
         }).join('');
 
     } catch (error) {
+        const errorMessage = error.name === 'AbortError' 
+            ? 'Request timeout. Please refresh the page.' 
+            : 'Failed to load popular rates';
+        
         elements.popularRates.innerHTML = `
             <div class="col-span-full text-center text-red-600 py-4">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                Failed to load popular rates
+                ${errorMessage}
             </div>
         `;
         console.error('Error loading popular rates:', error);
