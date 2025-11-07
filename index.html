@@ -9,9 +9,11 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2310b981'/><stop offset='100%25' style='stop-color:%23059669'/></linearGradient></defs><circle cx='24' cy='24' r='20' fill='url(%23g)'/><text x='15' y='20' font-family='Arial' font-size='14' font-weight='bold' fill='white'>$</text><text x='29' y='32' font-family='Arial' font-size='14' font-weight='bold' fill='white'>€</text><path d='M18 24 L30 24 M28 22 L30 24 L28 26' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.8'/></svg>">
     
+    <!-- Tailwind CSS CDN (Development Only) -->
+    <!-- For production, use: npm install tailwindcss && npx tailwindcss build -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Suppress Tailwind CDN warning in development
+        // Tailwind config
         tailwind.config = {
             theme: {
                 extend: {}
@@ -390,6 +392,26 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        // Suppress Chrome extension errors
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('Extension context invalidated')) {
+                e.stopImmediatePropagation();
+                return true;
+            }
+        });
+        
+        // Suppress unhandled promise rejections from extensions
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && e.reason.message && 
+                (e.reason.message.includes('Extension context') || 
+                 e.reason.message.includes('message port closed'))) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                return true;
+            }
+        });
+    </script>
+    <script src="script.js" defer onerror="console.error('Failed to load script.js')"></script>
 </body>
 </html>

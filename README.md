@@ -12,16 +12,16 @@ A modern, responsive currency exchange rate converter built with HTML, Tailwind 
 - 📱 **Fully Responsive**: Optimized for mobile, tablet, and desktop
 - ⚡ **Real-time Rates**: Live exchange rates from ExchangeRate-API
 - 🎨 **Modern UI**: Beautiful gradient design with smooth animations
-- � **Smart Caching**: Reduces API calls with 5-minute cache
-- � **Currency Swap**: Quick one-click currency exchange
+- 💾 **Smart Caching**: Reduces API calls with 5-minute cache
+- 🔄 **Currency Swap**: Quick one-click currency exchange
 - 💹 **Popular Rates**: Quick access to frequently used currencies
 - ⌨️ **Keyboard Support**: Press Enter to convert instantly
 - 🎯 **Auto-conversion**: Real-time conversion as you type
+- 🔁 **Retry Logic**: Automatic retry with timeout handling for API requests
 
 ## 🚀 Live Demo
 
 [View Live Demo](https://maksudur20.github.io/exrate/)
-
 
 ## 🛠️ Technologies Used
 
@@ -32,45 +32,55 @@ A modern, responsive currency exchange rate converter built with HTML, Tailwind 
 - **ExchangeRate-API**: Real-time exchange rates
 - **FlagCDN**: High-quality country flag images
 
-## 📦 Installation
+## 📦 Quick Start
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/20maksudur00/exrate.git
+   git clone https://github.com/Maksudur20/exrate.git
    cd exrate
    ```
 
-2. **Open in browser**
+2. **Start a local server**
+
    ```bash
-   # Simply open index.html in your browser
-   # Or use a local server
-   npx serve .
+   npx http-server
    ```
 
-3. **That's it!** No build process or dependencies required.
+3. **Open in browser**
 
-## 🔧 Configuration
+   Navigate to `http://localhost:8080` (or the port shown in terminal)
+
+> ⚠️ **Important**: Always use a local web server. Do not open `index.html` directly with `file://` protocol to avoid CORS and script loading issues.
+
+## 🎨 Customization
 
 ### API Key
+
 The project uses ExchangeRate-API. To use your own API key:
 
 1. Get a free API key from [ExchangeRate-API](https://www.exchangerate-api.com/)
 2. Open `script.js`
 3. Replace the API key:
+
    ```javascript
    const API_KEY = 'YOUR_API_KEY_HERE';
    ```
 
-### Customize Popular Currencies
+### Popular Currencies
+
 Edit the `POPULAR_CURRENCIES` array in `script.js`:
+
 ```javascript
 const POPULAR_CURRENCIES = ['EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR', 'MXN'];
 ```
 
-### Change Color Scheme
+### Color Scheme
+
 Modify Tailwind CSS classes in `index.html`:
-- Primary color: `bg-emerald-500` → Change to your preferred color
-- Gradient background: Edit CSS in `<style>` section
+
+- Primary color: `bg-emerald-500` → Change to your preferred Tailwind color
+- Gradient background: Edit CSS in the `<style>` section
 
 ## 📁 Project Structure
 
